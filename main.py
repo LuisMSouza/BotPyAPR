@@ -1,13 +1,27 @@
 import discord
 import os
 from dotenv import load_dotenv
+from tinydb import Query, TinyDB
 
 bot = discord.Bot(intents=discord.Intents.all())
 load_dotenv()
+db = TinyDB('data/data.json')
+
 
 @bot.event
 async def on_ready():
     print(f"[SOURCE] Logged as {bot.user}")
+
+
+@bot.slash_command(guilds_ids=[os.environ['GUILD_ID']])
+@discord.default_permissions(administrator=True)
+async def info(ctx):
+    User = Query()
+    search = db.search(User.id == ctx.user.id)
+    if not search:
+        await ctx.respond(content="Nada encontrado", ephemeral=True)
+        return
+    
 
 
 @bot.event
@@ -31,7 +45,8 @@ async def on_member_join(member):
     embed = discord.Embed()
     embed.description = f"Olá <@{member.id}>, conheça nossos serviços e produtos!"
     embed.title = "Bem vindo(a)!"
-    embed.set_image(url="https://media.tenor.com/S5gJsF7DFdIAAAAd/bem-vindo.gif")
+    embed.set_image(
+        url="https://media.tenor.com/S5gJsF7DFdIAAAAd/bem-vindo.gif")
     embed.set_footer(text=f"ID do usuário: {member.id}")
     embed.set_author(name=f"{member.display_name}",
                      icon_url=f"{member.display_avatar}")
