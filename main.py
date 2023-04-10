@@ -1,27 +1,46 @@
 import discord
 import os
 from dotenv import load_dotenv
-from tinydb import Query, TinyDB
+import sqlite3
 
 bot = discord.Bot(intents=discord.Intents.all())
 load_dotenv()
-db = TinyDB('data/data.json')
+try:
+    connection = sqlite3.connect("./data/db.sqlite")
+    cur = connection.cursor()
+except:
+    print("[SOURCE] DATABASE NOT FOUND")
 
 
 @bot.event
 async def on_ready():
     print(f"[SOURCE] Logged as {bot.user}")
+    try:
+        getDbState = cur.execute("SELECT * FROM USERS")
+    except:
+        print("[SOURCE] USERS TABLE NOT EXISTS, CREATING...")
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT, products TEXT)")
 
 
 @bot.slash_command(guilds_ids=[os.environ['GUILD_ID']])
 @discord.default_permissions(administrator=True)
-async def info(ctx):
-    User = Query()
-    search = db.search(User.id == ctx.user.id)
-    if not search:
-        await ctx.respond(content="Nada encontrado", ephemeral=True)
-        return
-    
+async def create(ctx, usuario: discord.Option(discord.Member, 'Usuário a ser modificado')):
+    embed = discord.Embed()
+    embed.set_author(name=usuario.display_name, icon_url=usuario.display_avatar)
+    embed.set_thumbnail(url=ctx.guild.icon)
+    embed.color = 15844367
+    embed.description = "```\nUtilize os botões abaixo para realizar alterações no usuário\n```"
+
+    buttonAddProd = discord.ui.Button()
+    buttonAddProd.custom_id = "addprod"
+    buttonAddProd.style = discord.ButtonStyle.success
+    buttonAddProd.label = "ADICIONAR PRODUTO"
+
+    view = discord.ui.View()
+    view.add_item(buttonAddProd)
+
+    await ctx.respond(embed=embed, view=view, ephemeral=True)
 
 
 @bot.event
