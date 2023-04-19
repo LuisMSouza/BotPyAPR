@@ -2,6 +2,7 @@ import discord
 import os
 from dotenv import load_dotenv
 import sqlite3
+from utils.validator import validate_email, validate_cpf
 
 bot = discord.Bot(intents=discord.Intents.all())
 load_dotenv()
