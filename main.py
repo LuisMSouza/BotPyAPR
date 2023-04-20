@@ -61,12 +61,6 @@ async def on_member_remove(member):
         if channel.id == int("730839460903649351"):
             await channel.send(embed=embed)
 
-@bot.event
-async def on_interaction(interaction):
-    if interaction.type == discord.InteractionType.application_command:
-        if interaction.customId == "addprod":
-            return print("Interaction collected")
-
 
 @bot.event
 async def on_member_join(member):
