@@ -104,7 +104,6 @@ async def on_interaction(interaction):
     if interaction.type == discord.InteractionType.component:
         if interaction.custom_id == "ticket":
             channels = await interaction.guild.fetch_channels()
-
                     
 
 bot.run(os.environ['TOKEN'])
