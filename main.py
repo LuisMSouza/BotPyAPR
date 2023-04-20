@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 import sqlite3
 import mercadopago
+from utils.validator import validate_cpf, validate_email
 
 bot = discord.Bot(intents=discord.Intents.all())
 load_dotenv()
