@@ -1,3 +1,4 @@
 .env
 .vscode
-data/db.sqlite
+data
+*.txt

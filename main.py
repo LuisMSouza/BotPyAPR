@@ -6,6 +6,8 @@ from utils.validator import validate_email, validate_cpf
 
 bot = discord.Bot(intents=discord.Intents.all())
 load_dotenv()
+sdk = mercadopago.SDK(os.environ['MP_TOKEN'])
+
 try:
     connection = sqlite3.connect("./data/db.sqlite")
     cur = connection.cursor()
@@ -24,24 +26,25 @@ async def on_ready():
             "CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT, products TEXT)")
 
 
-@bot.slash_command(guilds_ids=[os.environ['GUILD_ID']])
+@bot.slash_command(guilds_ids=[os.environ['GUILD_ID']], name="ticket", description="Envia a mensagem de ticket", custom_id="teste")
 @discord.default_permissions(administrator=True)
-async def create(ctx, usuario: discord.Option(discord.Member, 'Usuário a ser modificado')):
-    embed = discord.Embed()
-    embed.set_author(name=usuario.display_name, icon_url=usuario.display_avatar)
-    embed.set_thumbnail(url=ctx.guild.icon)
-    embed.color = 15844367
-    embed.description = "```\nUtilize os botões abaixo para realizar alterações no usuário\n```"
+async def ticket(ctx):
+    embedTicket = discord.Embed()
+    embedTicket.set_thumbnail(url=ctx.guild.icon)
+    embedTicket.description = "> __**Como abrir um ticket?**__\n```\nBasta clicar no botão abaixo dessa mensagem e em seguida informe seu nome e sobre o que se trata o ticket, em seguida, será criado um novo ambiente para que você possa conversar diretamente com nossa equipe.\n```"
+    embedTicket.set_image(url="")
+    embedTicket.color = 2829617
 
-    buttonAddProd = discord.ui.Button()
-    buttonAddProd.custom_id = "addprod"
-    buttonAddProd.style = discord.ButtonStyle.success
-    buttonAddProd.label = "ADICIONAR PRODUTO"
+    buttonTicket = discord.ui.Button()
+    buttonTicket.custom_id = "ticket"
+    buttonTicket.style = discord.ButtonStyle.success
+    buttonTicket.label = "ABRIR TICKET"
+    buttonTicket.emoji = "<:email:1096099607643168800>"
 
     view = discord.ui.View()
-    view.add_item(buttonAddProd)
-
-    await ctx.respond(embed=embed, view=view, ephemeral=True)
+    view.add_item(buttonTicket)
+    await ctx.channel.send(embeds=[embedTicket], view=view)
+    await ctx.respond(content="Mensagem enviada", ephemeral=True)
 
 
 @bot.event
@@ -57,12 +60,6 @@ async def on_member_remove(member):
     for channel in guild_channels:
         if channel.id == int("730839460903649351"):
             await channel.send(embed=embed)
-
-@bot.event
-async def on_interaction(interaction):
-    if interaction.type == discord.InteractionType.application_command:
-        if interaction.customId == "addprod":
-            return print("Interaction collected")
 
 
 @bot.event
@@ -81,5 +78,32 @@ async def on_member_join(member):
     for channel in guild_channels:
         if channel.id == int("727001878310944838"):
             await channel.send(content=f"<@{member.id}>", embed=embed)
+
+
+@bot.event
+async def on_interaction(interaction):
+    if interaction.type == discord.InteractionType.application_command:
+        if interaction.data['name'] == 'ticket':
+            embedTicket = discord.Embed()
+            embedTicket.set_thumbnail(url=interaction.guild.icon)
+            embedTicket.description = "> __**Como abrir um ticket?**__\n```\nBasta clicar no botão abaixo dessa mensagem e em seguida informe seu nome e sobre o que se trata o ticket, em seguida, será criado um novo ambiente para que você possa conversar diretamente com nossa equipe.\n```"
+            embedTicket.set_image(url="")
+            embedTicket.color = 2829617
+
+            buttonTicket = discord.ui.Button()
+            buttonTicket.custom_id = "ticket"
+            buttonTicket.style = discord.ButtonStyle.success
+            buttonTicket.label = "ABRIR TICKET"
+            buttonTicket.emoji = "<:email:1096099607643168800>"
+
+            view = discord.ui.View()
+            view.add_item(buttonTicket)
+            await interaction.channel.send(embeds=[embedTicket], view=view)
+            await interaction.response.send_message(content="```\nMensagem enviada\n```", ephemeral=True)
+
+    if interaction.type == discord.InteractionType.component:
+        if interaction.custom_id == "ticket":
+            channels = await interaction.guild.fetch_channels()
+                    
 
 bot.run(os.environ['TOKEN'])
